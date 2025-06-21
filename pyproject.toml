@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "emailTranslator"
+version = "0.1.0"
+description = "Package for electrical analysis"
+authors = [{ name = "Pete Downs", email = "pete.downs@pragmaticsemi.com"}]
+license = { file = "LICENSE" }
+readme = "README.md"
+requires-python = ">=3.7"
+dependencies = [
+    "pandas",
+    "pyprojroot",
+    "pydantic",
+    "openai"
+]
+
+[tool.setuptools]
+packages = ["emailTranslator"]

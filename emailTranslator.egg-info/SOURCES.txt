@@ -1,0 +1,8 @@
+README
+pyproject.toml
+emailTranslator/__init__.py
+emailTranslator.egg-info/PKG-INFO
+emailTranslator.egg-info/SOURCES.txt
+emailTranslator.egg-info/dependency_links.txt
+emailTranslator.egg-info/requires.txt
+emailTranslator.egg-info/top_level.txt
