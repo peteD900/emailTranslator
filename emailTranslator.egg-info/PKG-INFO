@@ -1,14 +1,15 @@
 Metadata-Version: 2.4
 Name: emailTranslator
 Version: 0.1.0
-Summary: Package for electrical analysis
-Author-email: Pete Downs <pete.downs@pragmaticsemi.com>
+Summary: LLM agent to translate and summarise emails
+Author-email: Pete Downs <pete.downs@gmail.com>
 Requires-Python: >=3.7
 Description-Content-Type: text/markdown
 Requires-Dist: pyprojroot
 Requires-Dist: pydantic
 Requires-Dist: openai
 Requires-Dist: python-dotenv>=0.21.1
+Requires-Dist: fastapi>=0.103.2
 
 # emailTranslator
 

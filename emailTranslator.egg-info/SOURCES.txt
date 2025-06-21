@@ -4,6 +4,7 @@ emailTranslator/__init__.py
 emailTranslator/agent.py
 emailTranslator/config.py
 emailTranslator/emails.py
+emailTranslator/main.py
 emailTranslator.egg-info/PKG-INFO
 emailTranslator.egg-info/SOURCES.txt
 emailTranslator.egg-info/dependency_links.txt
