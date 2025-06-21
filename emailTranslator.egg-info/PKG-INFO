@@ -5,4 +5,28 @@ Summary: Package for electrical analysis
 Author-email: Pete Downs <pete.downs@pragmaticsemi.com>
 Requires-Python: >=3.7
 Description-Content-Type: text/markdown
-Requires-Dist: pandas
+Requires-Dist: pyprojroot
+Requires-Dist: pydantic
+Requires-Dist: openai
+Requires-Dist: python-dotenv>=0.21.1
+
+# emailTranslator
+
+## What
+
+Use LLM agent to translate email (or text) into English and them summarise the content
+in bullet points. Also suggests if any actions were required.
+
+## Why
+
+For fun. And also possibly useful.
+
+## Install
+
+ pip install -e .
+
+## Usage
+
+ - Send email to dave.mason@blah
+
+ 

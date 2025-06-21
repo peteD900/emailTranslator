@@ -1,6 +1,5 @@
 from openai import OpenAI
 from pydantic import BaseModel
-from pydantic import ValidationError
 import logging
 from typing import List, Optional
 import smtplib
