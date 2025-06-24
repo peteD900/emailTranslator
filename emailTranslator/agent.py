@@ -70,7 +70,7 @@ class EmailAgent:
         self,
         api_key: str,
         model: str,
-        max_email_length: int = 10000,
+        max_email_length: int = 50000,
         max_subject_length: int = 500,
     ):
         logger.info("Starting Email Agent")

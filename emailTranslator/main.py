@@ -7,11 +7,11 @@ from emailTranslator.agent import EmailAgent, EmailData
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = FastAPI()
+subapp = FastAPI()
 agent = EmailAgent(api_key=Config.OPENAI_API_KEY, model=Config.DEFAULT_MODEL)
 
 
-@app.post("/email")
+@subapp.post("/email")
 async def handle_incoming_email(email: EmailData, request: Request):
     logger.info("Starting email process")
     # logger.info(f"Body length: {len(email.body)}")
@@ -42,6 +42,11 @@ async def handle_incoming_email(email: EmailData, request: Request):
         raise HTTPException(status_code=500, detail=result.error)
 
 
-@app.get("/")
+@subapp.get("/")
 def home():
     return {"status": "alive"}
+
+app = FastAPI()
+app.mount("/emailTranslator", subapp)
+
+
