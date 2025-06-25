@@ -1,6 +1,7 @@
 from pyprojroot import here
 import json
 import os
+from models import EmailData
 
 
 # Example emails =====================================================
@@ -23,6 +24,7 @@ def load_example_email(email_index: int):
 
     emails = load_example_emails()
     email = emails[email_index]
+    email = EmailData(**email)
     return email
 
 
@@ -30,6 +32,3 @@ if __name__ == "__main__":
     # examples
     email = load_example_email(3)
     print(email)
-
-    # test send
-    send_email(subject="test from pete", body="this is a test")
