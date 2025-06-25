@@ -1,11 +1,8 @@
 from openai import OpenAI
-from pydantic import BaseModel
 import logging
-from typing import List, Optional
-import smtplib
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
+
 from emailTranslator.config import Config
+import uuid
 
 # Set up logging configuration
 logging.basicConfig(
@@ -17,103 +14,24 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-# Email data =================================================
-class EmailData(BaseModel):
-    sender: str
-    date: str
-    subject: str
-    body: str
-
-
-class TranslatedEmail(BaseModel):
-    translated_subject: str
-    translated_body: str
-    languages_detected: List[str]
-
-
-class ProcessedEmail(BaseModel):
-    original_sender: str
-    actionable: bool
-    action: Optional[str] = None
-    who: Optional[str] = None
-    summary: List[str]
-
-
-class SummaryEmail(BaseModel):
-    subject: str
-    body: str
-
-
-class SafeguardResult(BaseModel):
-    email_pass: bool
-    reason: str
-    threat_type: Optional[str] = None
-
-
-class ProcessingResult(BaseModel):
-    success: bool
-    processed_email: Optional[ProcessedEmail] = None
-    summary_email: Optional[SummaryEmail] = None
-    error: Optional[str] = None
-    threat_type: Optional[str] = None
-
-
 # Agent =====================================================
 class EmailAgent:
     """
     Process flow:
-        1) Check email is safe
-        2)
+        1) Check email is safe and not a loop
+        2) Check language and translate if needed
+        3) Summarize email
+        4) Send summary with loop prevention headers
     """
 
     def __init__(
         self,
         api_key: str,
         model: str,
-        max_email_length: int = 50000,
-        max_subject_length: int = 500,
     ):
         logger.info("Starting Email Agent")
         self.client = OpenAI(api_key=api_key)
         self.model = model
-        # Length limits configuration
-        self.max_email_length = max_email_length
-        self.max_subject_length = max_subject_length
-
-    def run_safeguards(self, email: EmailData) -> SafeguardResult:
-        """
-        Check email length limits to prevent processing issues.
-        Returns SafeguardResult indicating if email is safe to process.
-        """
-        # Check email length limits
-        total_length = len(email.subject) + len(email.body)
-
-        logger.info(
-            f"Checking email length: subject={len(email.subject)}, body={len(email.body)}, total={total_length}"
-        )
-
-        if total_length > self.max_email_length:
-            logger.warning(
-                f"Email rejected: too long ({total_length} chars > {self.max_email_length})"
-            )
-            return SafeguardResult(
-                email_pass=False,
-                reason=f"Email too long: {total_length} characters exceeds limit of {self.max_email_length}",
-                threat_type="length_limit",
-            )
-
-        if len(email.subject) > self.max_subject_length:
-            logger.warning(
-                f"Email rejected: subject too long ({len(email.subject)} chars)"
-            )
-            return SafeguardResult(
-                email_pass=False,
-                reason=f"Subject too long: {len(email.subject)} characters exceeds limit of {self.max_subject_length}",
-                threat_type="length_limit",
-            )
-
-        logger.info("Email passed length checks")
-        return SafeguardResult(email_pass=True, reason="Email passed length checks")
 
     def check_email_language(self, email: EmailData) -> TranslatedEmail:
         """
@@ -191,7 +109,6 @@ class EmailAgent:
             
             Return the summary as a list of bullet points (e.g. ["Point 1", "Point 2"]). 
             Do not format it as a paragraph.
-
             """
 
         # LLM cant take in a list of subject, body: needs one string
@@ -232,12 +149,17 @@ class EmailAgent:
         self, processed: ProcessedEmail, translated: TranslatedEmail
     ) -> SummaryEmail:
         """
-        Final format of summary email.
+        Final format of summary email with loop prevention.
         """
         summary_bullets = "\n".join(f"- {point}" for point in processed.summary)
 
-        # Email content
-        subject = f"Summary of: {translated.translated_subject}"
+        # Prevent nested "Summary of:" in subject
+        original_subject = translated.translated_subject
+        if original_subject.startswith("Summary of:"):
+            # Don't add another "Summary of:" if it's already a summary
+            subject = f"Re-summary: {original_subject}"
+        else:
+            subject = f"Summary of: {original_subject}"
 
         body = f"""
         Hello, 
@@ -256,17 +178,21 @@ class EmailAgent:
         {translated.translated_body}
 
         From DM
+        
+        --
+        This is an automated email summary. Do not reply to this message.
+        System ID: {self.system_id}
         """
 
         return SummaryEmail(subject=subject, body=body)
 
     def process_email_safely(self, email: EmailData) -> ProcessingResult:
         """
-        Main method to process email with length checks.
+        Main method to process email with safety checks including loop detection.
         Returns ProcessingResult with either processed email or error information.
         """
 
-        # Run length checks first
+        # Run all safety checks first (including loop detection)
         safeguard_result = self.run_safeguards(email)
 
         if not safeguard_result.email_pass:
@@ -279,7 +205,7 @@ class EmailAgent:
             )
 
         try:
-            # Process email normally if it passes length checks
+            # Process email normally if it passes all safety checks
             translated_email = self.check_email_language(email)
             processed_email = self.summarise_email(translated_email)
             summary_email = self.write_summary_email(processed_email, translated_email)
@@ -299,46 +225,12 @@ class EmailAgent:
                 threat_type="processing_error",
             )
 
-    def send_email(self, summary_email: SummaryEmail, to_email: str = None):
-        """
-        Send email based on setup in Config file. Expects subject and
-        body to be pre-processed i.e. will send exactly as it.
-        """
-        logger.info("Sending summary email")
-
-        subject = summary_email.subject
-        body = summary_email.body
-
-        # Option to send to other email
-        SEND_TO = to_email or Config.DEFAULT_RECIPIENT
-
-        # Create MIME structure
-        msg = MIMEMultipart()
-        msg["From"] = Config.EMAIL_USERNAME
-        msg["To"] = SEND_TO
-        msg["Subject"] = subject
-        msg.attach(MIMEText(body, "plain"))
-
-        # Send email via SMTP
-        SMPT_SERVER = Config.SMTP_SERVER
-        SMPT_PORT = Config.SMTP_PORT
-
-        try:
-            with smtplib.SMTP_SSL(SMPT_SERVER, SMPT_PORT) as server:
-                server.login(Config.EMAIL_USERNAME, Config.EMAIL_PASSWORD)
-                server.send_message(msg)
-
-            logger.info("Summary email sent")
-
-        except Exception as e:
-            logger.error(f"Language check LLM call failed, {e}", exc_info=True)
-
 
 if __name__ == "__main__":
     from emailTranslator.config import Config
-    from emailTranslator.emails import load_example_email
+    from emailTranslator.emailer import load_example_email
 
-    email = load_example_email(5)
+    email = load_example_email(3)
     email = EmailData(**email)
 
     agent = EmailAgent(api_key=Config.OPENAI_API_KEY, model=Config.DEFAULT_MODEL)
