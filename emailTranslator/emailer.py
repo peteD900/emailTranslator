@@ -4,7 +4,7 @@ import os
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from emailTranslator.models import EmailData, SummaryEmail
+from emailTranslator.models import EmailData, FinalEmail
 from emailTranslator.logger import get_logger
 from emailTranslator.config import Config
 
@@ -20,7 +20,7 @@ class Emailer:
         self.username = username
         self.password = password
 
-    def send_email(self, summary_email: SummaryEmail, send_to):
+    def send_email(self, summary_email: FinalEmail, send_to):
         """
         Send email with loop prevention headers.
         """
@@ -90,7 +90,7 @@ if __name__ == "__main__":
     print(email)
 
     # Send email
-    email = SummaryEmail(subject="test send", body="this is a test from Pete")
+    email = FinalEmail(subject="test send", body="this is a test from Pete")
     emailer = Emailer(
         smtp_port=Config.SMTP_PORT,
         smtp_server=Config.SMTP_SERVER,

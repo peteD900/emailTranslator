@@ -7,7 +7,7 @@ from emailTranslator.config import Config
 logger = get_logger()
 
 
-class EmailSafeguard:
+class SafeGuarder:
     """
     Performs all safety and loop checks on incoming emails before processing.
 
@@ -17,7 +17,7 @@ class EmailSafeguard:
     """
 
     def __init__(self):
-        logger.info("Starting Safe Guards")
+        logger.info("Starting SafeGuarder")
         self.max_email_length = Config.MAX_EMAIL_LENGTH
 
     def is_loop_email(self, email: EmailData) -> bool:
@@ -139,7 +139,7 @@ class EmailSafeguard:
 
 
 if __name__ == "__main__":
-    from emailTranslator.emails import load_example_email
+    from emailTranslator.emailer import load_example_email
 
     email = load_example_email(3)
     guard = EmailSafeguard()

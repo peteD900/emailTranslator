@@ -1,14 +1,16 @@
-import logging
 from fastapi import FastAPI, Request, HTTPException
-from pydantic import BaseModel
+from emailTranslator.summariser import Summariser
+from emailTranslator.emailer import Emailer
+from emailTranslator.logger import get_logger
+from emailTranslator.models import EmailData
 from emailTranslator.config import Config
-from emailTranslator.agent import EmailAgent, EmailData
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+
+logger = get_logger()
 
 subapp = FastAPI()
-agent = EmailAgent(api_key=Config.OPENAI_API_KEY, model=Config.DEFAULT_MODEL)
+summariser = Summariser()
+emailer = Emailer()
 
 
 @subapp.post("/email")
@@ -31,10 +33,10 @@ async def handle_incoming_email(email: EmailData, request: Request):
     if not email.body.strip():
         raise HTTPException(status_code=400, detail="Email body is empty")
 
-    result = agent.process_email_safely(email)
+    result = summariser.process_email(email)
 
     if result.success:
-        agent.send_email(result.summary_email)
+        emailer.send_email(result.final_email)
         return {"status": "processed"}
 
     else:
@@ -46,7 +48,6 @@ async def handle_incoming_email(email: EmailData, request: Request):
 def home():
     return {"status": "alive"}
 
+
 app = FastAPI()
 app.mount("/emailTranslator", subapp)
-
-

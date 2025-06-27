@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from typing import List, Optional
 
 
+# Main input to process ============================================
 class EmailData(BaseModel):
     """
     Format required for pushing email into the agent. Headers are to
@@ -17,6 +18,7 @@ class EmailData(BaseModel):
     headers: Optional[dict] = None
 
 
+# safeguards.py ====================================================
 class SafeguardResult(BaseModel):
     """
     Used in pre-checks before processing email with LLM.
@@ -28,19 +30,31 @@ class SafeguardResult(BaseModel):
     threat_type: Optional[str] = None
 
 
+# summariser.py ======================================================
+class LanguageCheck(BaseModel):
+    """
+    Let's system know whether the email needs translating into English.
+    """
+
+    needs_translating: bool
+    language_detected: str
+
+
+class TranslatedText(BaseModel):
+    translation: str
+
+
 class TranslatedEmail(BaseModel):
     """
-    - Model response for check_email_language()
-    - Input to summarise_email() and write_summary_email()
-
+    Format for tranalated email but this is used for emails that were
+    not translated also. This is to make futher processing easier.
     """
 
     translated_subject: str
     translated_body: str
-    languages_detected: List[str]
 
 
-class ProcessedEmail(BaseModel):
+class SummarisedEmail(BaseModel):
     """
     The stuff I actually want to extract from the original email.
 
@@ -48,14 +62,12 @@ class ProcessedEmail(BaseModel):
      - Input to write_summary_email()
     """
 
-    original_sender: str
     actionable: bool
     action: Optional[str] = None
-    who: Optional[str] = None
-    summary: List[str]  #
+    summary: List[str]
 
 
-class SummaryEmail(BaseModel):
+class FinalEmail(BaseModel):
     """
     For sending out results.
 
@@ -67,16 +79,10 @@ class SummaryEmail(BaseModel):
 
 
 class ProcessingResult(BaseModel):
-    """
-    Final result of the process. Contains all the info required to
-    write and send summmary email.
-     - Input to
-     - Output of process_email_safely()
-
-    """
-
     success: bool
-    processed_email: Optional[ProcessedEmail] = None
-    summary_email: Optional[SummaryEmail] = None
+    final_email: Optional[FinalEmail] = None
     error: Optional[str] = None
     threat_type: Optional[str] = None
+
+
+# emailer.py ======================================================

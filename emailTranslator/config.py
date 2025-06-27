@@ -6,9 +6,9 @@ load_dotenv()
 
 
 class Config:
-    # LLM
+    # LLM OPENAI
     OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-    DEFAULT_MODEL = os.getenv("DEFAULT_MODEL")
+    OPENAI_MODEL = "gpt-4.1-nano"
 
     # SEND EMAIL
     SMTP_SERVER = "smtp.mailo.com"
