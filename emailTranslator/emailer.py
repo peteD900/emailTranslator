@@ -60,6 +60,31 @@ class Emailer:
             raise
 
 
+def get_emailer(email_client="mailo"):
+    """
+    In case want to move to live or gmail.
+    """
+    if email_client == "mailo":
+        client = Emailer(
+            smtp_server=Config.MAILO_SMTP_SERVER,
+            smtp_port=Config.MAILO_SMTP_PORT,
+            username=Config.MAILO_USERNAME,
+            password=Config.MAILO_PASSWORD,
+        )
+
+    return client
+
+
+def get_llm_client(llm="openai"):
+    """
+    Probably wont need a different llm but put this here in case.
+    """
+    if llm == "openai":
+        client = LLMClient(api_key=Config.OPENAI_API_KEY, model=Config.OPENAI_MODEL)
+
+    return client
+
+
 # Example emails =====================================================
 def load_example_emails():
     """

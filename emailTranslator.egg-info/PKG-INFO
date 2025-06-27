@@ -11,6 +11,7 @@ Requires-Dist: openai
 Requires-Dist: python-dotenv>=0.21.1
 Requires-Dist: fastapi>=0.103.2
 Requires-Dist: uvicorn>=0.22.0
+Requires-Dist: requests>=2.31.0
 
 # emailTranslator
 

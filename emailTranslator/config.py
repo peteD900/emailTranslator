@@ -10,14 +10,16 @@ class Config:
     OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
     OPENAI_MODEL = "gpt-4.1-nano"
 
-    # SEND EMAIL
-    SMTP_SERVER = "smtp.mailo.com"
-    SMTP_PORT = 465
-    EMAIL_USERNAME = os.getenv("EMAIL_USERNAME")
-    EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
+    # MAILO
+    MAILO_SMTP_SERVER = "smtp.mailo.com"
+    MAILO_SMTP_PORT = 465
+    MAILO_USERNAME = os.getenv("EMAIL_USERNAME")
+    MAILO_PASSWORD = os.getenv("EMAIL_PASSWORD")
+
+    # SEND TO
     DEFAULT_RECIPIENT = os.getenv("EMAIL_TO")
 
-    # API
+    # APP API
     API_TOKEN = os.getenv("API_TOKEN")
 
     # SAFEGAURDS
