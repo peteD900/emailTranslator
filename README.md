@@ -9,9 +9,14 @@ in bullet points. Also suggests if any actions were required.
 
 For fun. And also possibly useful.
 
-## Install
+## Install dependancie uv pip
+uv pip install -r pyproject.toml
 
- pip install -e .
+
+## Useful
+
+### Watch logs on vps
+sudo journalctl -u yourapp.service -f
 
 ## Usage
 

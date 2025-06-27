@@ -163,7 +163,7 @@ class Summariser:
         """
         summary_bullets = "\n".join(f"- {point}" for point in summary.summary)
 
-        subject = translation.translated_subject
+        subject = str(translation.translated_subject)
 
         body = f"""
         Hello, 
