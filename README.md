@@ -30,12 +30,12 @@ To do: move the worker into this project so it can be dockerised.
 - Sends a summarized email to a target recipient  
 
 ```bash
-./emailTranslator/ # Main package (to be renamed someday 😅)
+./emailTranslator/ # Main package (rename..)
     ├── config.py # Loads credentials from .env
-    ├── emailer.py # Email sending logic
-    ├── llm.py # LLM prompting & interaction
-    ├── summariser.py # Parsing/translating logic
-    ├── safeguards.py # Input validation/security
+    ├── emailer.py # To send out summarised email
+    ├── llm.py # OpenAI client connection
+    ├── summariser.py # Guts of the 'agent'
+    ├── safeguards.py # Security checks
     ├── logger.py # Structured logging
     ├── models.py # Pydantic request/response models
     └── main.py # FastAPI app entrypoint
