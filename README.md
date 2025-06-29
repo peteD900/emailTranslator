@@ -47,11 +47,13 @@ To do: move the worker into this project so it can be dockerised.
 
 ## 🔧 Configuration (`.env` variables)
 
+```bash
 OPENAI_API_KEY=… # Your OpenAI API key
 EMAIL_USERNAME=… # SMTP username
 EMAIL_PASSWORD=… # SMTP password or app-specific password
 EMAIL_TO=… # Where summary emails should be sent
 API_TOKEN=… # Shared secret between CF Worker & this FastAPI app
+```
 
 
 ---
