@@ -1,52 +1,61 @@
-import logging
 from fastapi import FastAPI, Request, HTTPException
-from pydantic import BaseModel
+from emailTranslator.summariser import Summariser
+from emailTranslator.emailer import get_emailer
+from emailTranslator.logger import get_logger
+from emailTranslator.models import EmailData
 from emailTranslator.config import Config
-from emailTranslator.agent import EmailAgent, EmailData
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-subapp = FastAPI()
-agent = EmailAgent(api_key=Config.OPENAI_API_KEY, model=Config.DEFAULT_MODEL)
 
 
-@subapp.post("/email")
-async def handle_incoming_email(email: EmailData, request: Request):
-    logger.info("Starting email process")
-    # logger.info(f"Body length: {len(email.body)}")
-    # logger.info(f"Raw email body (first 500 chars): {repr(email.body[:500])}")
+def create_app():
+    logger = get_logger()
 
-    client_ip = request.client.host
-    token = request.headers.get("x-api-token")
+    subapp = FastAPI()
+    summariser = Summariser()
+    emailer = get_emailer()
 
-    if token != Config.API_TOKEN:
-        logger.warning(f"Unauthorized access attempt from {client_ip}")
-        raise HTTPException(status_code=401, detail="Unauthorized")
+    @subapp.post("/email")
+    async def handle_incoming_email(email: EmailData, request: Request):
+        logger.info("Starting email process")
+        # logger.info(f"Body length: {len(email.body)}")
+        # logger.info(f"Raw email body (first 500 chars): {repr(email.body[:500])}")
 
-    logger.info(
-        f"Email received from {email.sender} (IP: {client_ip}) | Subject: {email.subject}"
-    )
+        client_ip = request.client.host
+        token = request.headers.get("x-api-token")
 
-    if not email.body.strip():
-        raise HTTPException(status_code=400, detail="Email body is empty")
+        if token != Config.API_TOKEN:
+            logger.warning(f"Unauthorized access attempt from {client_ip}")
+            raise HTTPException(status_code=401, detail="Unauthorized")
 
-    result = agent.process_email_safely(email)
+        logger.info(
+            f"Email received from {email.sender} (IP: {client_ip}) | Subject: {email.subject}"
+        )
 
-    if result.success:
-        agent.send_email(result.summary_email)
-        return {"status": "processed"}
+        if not email.body.strip():
+            raise HTTPException(status_code=400, detail="Email body is empty")
 
-    else:
-        logger.error(f"Failed to process email from {email.sender}: {result.error}")
-        raise HTTPException(status_code=500, detail=result.error)
+        result = summariser.process_email(email)
+
+        if result.success:
+            emailer.send_email(result.final_email, send_to=Config.DEFAULT_RECIPIENT)
+            return {"status": "processed"}
+
+        else:
+            logger.error(f"Failed to process email from {email.sender}: {result.error}")
+            raise HTTPException(status_code=500, detail=result.error)
+
+    @subapp.get("/")
+    def home():
+        return {"status": "alive"}
+
+    app = FastAPI()
+    app.mount("/emailTranslator", subapp)
+
+    return app
 
 
-@subapp.get("/")
-def home():
-    return {"status": "alive"}
+app = create_app()
 
-app = FastAPI()
-app.mount("/emailTranslator", subapp)
+if __name__ == "__main__":
+    import uvicorn
 
-
+    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
