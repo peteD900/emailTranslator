@@ -22,8 +22,6 @@ Built with Python, FastAPI, and OpenAI's framework. Inspiration from [Dave Ebbel
 
 To do: move the worker into this project so it can be dockerised.
 
----
-
 ### 2. ⚙️ FastAPI Endpoint & LLM Agent
 
 - Receives the processed email payload  
@@ -43,8 +41,6 @@ To do: move the worker into this project so it can be dockerised.
     └── main.py # FastAPI app entrypoint
 ```
 
----
-
 ## 🔧 Configuration (`.env` variables)
 
 ```bash
@@ -54,9 +50,6 @@ EMAIL_PASSWORD=… # SMTP password or app-specific password
 EMAIL_TO=… # Where summary emails should be sent
 API_TOKEN=… # Shared secret between CF Worker & this FastAPI app
 ```
-
-
----
 
 ## 🚀 Getting Started
 
