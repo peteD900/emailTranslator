@@ -1,30 +1,20 @@
 import os
 from openai import OpenAI
-import dotenv as dt
+from emailTranslator.llm import get_llm_client
 
-dt.load_dotenv()
-
-api_key = os.getenv("OPENAI_API_KEY")
-model = os.getenv("DEFAULT_MODEL")
-
-client = OpenAI(api_key=api_key)
+client = get_llm_client()
 
 question = """
-is there something in vscode that will auto make me little hashtag code
-separators like for "load" "munge" etc
-
+    what is the latest gpt model
 """
+messages = [
+    {"role": "system", "content": "You're a helpful assistant."},
+    {
+        "role": "user",
+        "content": question,
+    },
+]
 
-completion = client.chat.completions.create(
-    model=model,
-    messages=[
-        {"role": "system", "content": "You're a helpful assistant."},
-        {
-            "role": "user",
-            "content": question,
-        },
-    ],
-)
 
-response = completion.choices[0].message.content
+response = client.create_completion(messages=messages)
 print(response)

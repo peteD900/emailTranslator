@@ -8,7 +8,7 @@ load_dotenv()
 class Config:
     # LLM OPENAI
     OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-    OPENAI_MODEL = "gpt-4.1-nano"
+    OPENAI_MODEL = "gpt-5"
 
     # MAILO
     MAILO_SMTP_SERVER = "smtp.mailo.com"
